@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    // add firebaseConfig from fire base
+    // add firebaseConfig
 };
 
 export default firebaseConfig;

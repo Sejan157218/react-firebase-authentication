@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import intFirebaseAuthentication from './Firebase/firebase.init';
-import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from 'react';
 
 
@@ -9,10 +9,12 @@ import { useState } from 'react';
 intFirebaseAuthentication()
 
 function App() {
-  const [eamil, setEmail] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('')
+  const [isLogin, setIsLogin] = useState(false);
   const auth = getAuth();
+  console.log(isLogin);
   const handlerToGoogleSign = () => {
     const googleProvider = new GoogleAuthProvider();
     signInWithPopup(auth, googleProvider)
@@ -47,21 +49,45 @@ function App() {
       setError('Password should be at least 1 upper case 1 lower case 1 digit 8 characters')
       return;
     }
-    createUserWithEmailAndPassword(auth, eamil, password)
+
+    isLogin ? loginUser(email, password) : createNewUser(email, password)
+
+  }
+  const loginUser = (email, password) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+
+        const user = userCredential.user;
+        console.log(user);
+        setError('you are succesfuly login in ')
+
+      })
+      .catch((error) => {
+        setError(error.message)
+      });
+  }
+
+  const createNewUser = (email, password) => {
+    createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
         const user = result.user;
         console.log(user);
         setError('')
       })
-
-    console.log(eamil, password);
-
+      .catch((error) => {
+        setError(error.message)
+      });
   }
 
 
+
+  const handlerToToggle = e => {
+    setIsLogin(e.target.checked)
+  }
+
   return (
     <div className="container ms-5">
-
+      <h1>{isLogin ? "Please Login" : "Please register"}</h1>
       <form>
         <div className="mb-3">
           <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
@@ -73,11 +99,11 @@ function App() {
           <input onBlur={handlerToPassword} type="password" className="form-control" id="exampleInputPassword1" />
         </div>
         <div className="mb-3 form-check">
-          <input type="checkbox" className="form-check-input" id="exampleCheck1" />
-          <label className="form-check-label" htmlFor="exampleCheck1">Check me out</label>
+          <input onClick={handlerToToggle} type="checkbox" className="form-check-input" id="exampleCheck1" />
+          <label className="form-check-label" htmlFor="exampleCheck1">Already sign in</label>
         </div>
         <h1 className="danger">{error}</h1>
-        <button onClick={handlerToSubmit} type="submit" className="btn btn-primary">Register</button>
+        <button onClick={handlerToSubmit} type="submit" className="btn btn-primary">{isLogin ? "Login" : "Register"}</button>
       </form>
     </div>
   );
